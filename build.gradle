@@ -7,6 +7,6 @@ javaModule.name = 'browngu.logging'
 
 sourceSets {
 	main {
-		java.srcDirs = ['src/logging/java']
+		java.srcDirs = ['src/java']
 	}
 }
