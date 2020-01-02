@@ -15,6 +15,8 @@ import java.util.Set;
  * This class is responsible for logging messages provided to it.
  */
 public class Logger {
+	private static final Logger logger = new Logger();
+
 	private static final class Output {
 		final Writer writer;
 		final int minimumLevel;
@@ -27,7 +29,7 @@ public class Logger {
 
 	private final List<Output> outputs = new ArrayList<>();
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
-			"[yyyy-MM-dd][HH:mm:ss.ss]"
+			"'['yyyy-MM-dd']['HH:mm:ss.ss']'"
 	).withZone(ZoneId.systemDefault());
 
 	@FunctionalInterface
@@ -54,6 +56,14 @@ public class Logger {
 	public void addLoggingOutput(Writer writer, Level minimumLevel) {
 		outputs.add(new Output(writer, minimumLevel.level()));
 		outputs.sort(Comparator.comparingInt(a -> a.minimumLevel));
+	}
+
+	/**
+	 * Returns a default shared logger to use.
+	 * If the output streams access shared state then this is not thread safe.
+	 **/
+	public static Logger logger() {
+		return logger;
 	}
 
 	public void log(Level level, Throwable throwable, String message) {
@@ -99,8 +109,11 @@ public class Logger {
 				break;
 
 			try {
-				output.writer.write(log.toString());
-				output.writer.flush();
+				// Synchronize on the stream to try and guard against race conditions with other logger calls.
+				synchronized(output.writer) {
+					output.writer.write(log.toString());
+					output.writer.flush();
+				}
 			} catch(IOException e) {
 				iterator.remove();
 				log(Severity.ERROR, e, "Failed to log a message, removing output '%s'", output);
