@@ -4,10 +4,9 @@ import java.lang.annotation.Native;
 
 public enum Severity implements Logger.Level {
 	@Native DEBUG(10, "Information of use to the programmer"),
-	@Native GPU(20, "Messages from the GPU validation layer"),
-	@Native INFO(30, "Detailed information"),
-	@Native WARNING(40, "Non-fatal issues"),
-	@Native ERROR(50, "Fatal issues");
+	@Native INFO(20, "Detailed information"),
+	@Native WARNING(30, "Non-fatal issues"),
+	@Native ERROR(40, "Fatal issues");
 
 	private final String description;
 	private final int level;
