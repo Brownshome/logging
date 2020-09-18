@@ -1,29 +1,52 @@
 plugins {
 	id 'java-library'
 	id 'maven-publish'
-	id 'com.zyxist.chainsaw' version '0.3.1'
 }
-
-javaModule.name = 'browngu.logging'
 
 group = 'brownshome'
-version = 'alpha'
+version = '1.0.0'
 
-sourceSets {
-	main.java.srcDirs = ['src/java']
-}
-
-task sourcesJar(type: Jar) {
-	from sourceSets.main.allJava
-	classifier = 'sources'
+java {
+	modularity.inferModulePath = true
+	withSourcesJar()
+	withJavadocJar()
 }
 
 publishing {
+	repositories {
+		maven {
+			name = 'GitHubPackages'
+			url = uri('https://maven.pkg.github.com/Brownshome/logging')
+			credentials {
+				username = project.properties['gpr.usr']
+				password = project.properties['gpr.key']
+			}
+		}
+	}
+
 	publications {
 		mavenJava(MavenPublication) {
 			artifactId = 'logging'
 			from components.java
-			artifact sourcesJar
+
+			pom {
+				name = 'Logging'
+				description = 'A simple logging library'
+				url = 'https://github.com/Brownshome/logging'
+
+				developers {
+					developer {
+						id = 'Brownshome'
+						name = 'James Brown'
+						email = 'jamesphone180@gmail.com'
+					}
+				}
+
+				scm {
+					connection = 'scm:git:git://github.com/Brownshome/logging.git'
+					url = 'https://github.com/Brownshome/logging'
+				}
+			}
 		}
 	}
 }
