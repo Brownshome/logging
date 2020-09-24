@@ -4,12 +4,25 @@ plugins {
 }
 
 group = 'brownshome'
-version = '1.0.0'
+version = '1.1.0'
 
 java {
 	modularity.inferModulePath = true
 	withSourcesJar()
 	withJavadocJar()
+
+	sourceCompatibility = JavaVersion.VERSION_15
+}
+
+tasks.withType(JavaCompile) {
+	options.compilerArgs += "--enable-preview"
+}
+
+javadoc {
+	options {
+		addBooleanOption '-enable-preview', true
+		addStringOption 'source', '15'
+	}
 }
 
 publishing {

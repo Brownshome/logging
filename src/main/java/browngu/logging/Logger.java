@@ -5,27 +5,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This class is responsible for logging messages provided to it.
  */
 public class Logger {
 	private static final Logger logger = new Logger();
-
-	private static final class Output {
-		final Writer writer;
-		final int minimumLevel;
-
-		Output(Writer writer, int minimumLevel) {
-			this.writer = writer;
-			this.minimumLevel = minimumLevel;
-		}
-	}
 
 	private final List<Output> outputs = new ArrayList<>();
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
@@ -38,6 +24,30 @@ public class Logger {
 	}
 
 	/**
+	 * Removes all existing outputs and adds the specified outputs
+	 * @param outputs an array of outputs
+	 */
+	public void setLoggingOutputs(Output... outputs) {
+		assert outputs != null;
+
+		this.outputs.clear();
+		this.outputs.addAll(Arrays.asList(outputs));
+		this.outputs.sort(Comparator.comparingInt(Output::minimumLevel));
+	}
+
+	/**
+	 * Removes all existing outputs and adds the specified outputs
+	 * @param outputs an iterable of outputs
+	 */
+	public void setLoggingOutputs(Iterable<Output> outputs) {
+		assert outputs != null;
+
+		this.outputs.clear();
+		outputs.forEach(this.outputs::add);
+		this.outputs.sort(Comparator.comparingInt(Output::minimumLevel));
+	}
+
+	/**
 	 * Adds a logging output stream to be used.
 	 * @param stream The stream to output logging data to, the data will be encoded in UTF-8. Each log will be followed
 	 *               by a system specific separator.
@@ -45,7 +55,7 @@ public class Logger {
 	 */
 	public void addLoggingOutput(OutputStream stream, Level minimumLevel) {
 		outputs.add(new Output(new OutputStreamWriter(stream, StandardCharsets.UTF_8), minimumLevel.level()));
-		outputs.sort(Comparator.comparingInt(a -> a.minimumLevel));
+		outputs.sort(Comparator.comparingInt(Output::minimumLevel));
 	}
 
 	/**
@@ -55,7 +65,16 @@ public class Logger {
 	 */
 	public void addLoggingOutput(Writer writer, Level minimumLevel) {
 		outputs.add(new Output(writer, minimumLevel.level()));
-		outputs.sort(Comparator.comparingInt(a -> a.minimumLevel));
+		outputs.sort(Comparator.comparingInt(Output::minimumLevel));
+	}
+
+	/**
+	 * Adds a logging output. Note that this does not remove existing outputs
+	 * @param output the output object to add
+	 */
+	public void addLoggingOutput(Output output) {
+		outputs.add(output);
+		outputs.sort(Comparator.comparingInt(Output::minimumLevel));
 	}
 
 	/**
@@ -105,14 +124,14 @@ public class Logger {
 		for(var iterator = outputs.iterator(); iterator.hasNext(); ) {
 			var output = iterator.next();
 
-			if(output.minimumLevel > level.level())
+			if(output.minimumLevel() > level.level())
 				break;
 
 			try {
 				// Synchronize on the stream to try and guard against race conditions with other logger calls.
-				synchronized(output.writer) {
-					output.writer.write(log.toString());
-					output.writer.flush();
+				synchronized(output.writer()) {
+					output.writer().write(log.toString());
+					output.writer().flush();
 				}
 			} catch(IOException e) {
 				iterator.remove();
