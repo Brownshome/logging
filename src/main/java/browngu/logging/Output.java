@@ -5,9 +5,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Defines an output channel for the logger.
- *
- * @param writer the writer to output logs to
- * @param minimumLevel Any events less important than this are not logged to this writer.
  */
 public record Output(Writer writer, int minimumLevel) {
 	/**
@@ -21,6 +18,12 @@ public record Output(Writer writer, int minimumLevel) {
 		this(new OutputStreamWriter(stream, StandardCharsets.UTF_8), minimumLevel);
 	}
 
+	/**
+	 * Defines an output channel for the logger.
+	 *
+	 * @param writer the writer to output logs to
+	 * @param minimumLevel Any events less important than this are not logged to this writer.
+	 */
 	public Output {
 		assert writer != null;
 	}

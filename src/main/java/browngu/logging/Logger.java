@@ -13,13 +13,24 @@ import java.util.*;
 public class Logger {
 	private static final Logger logger = new Logger();
 
+	static {
+		logger().addLoggingOutput(System.out, Severity.INFO);
+	}
+
 	private final List<Output> outputs = new ArrayList<>();
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
 			"'['yyyy-MM-dd']['HH:mm:ss.ss']'"
 	).withZone(ZoneId.systemDefault());
 
+	/**
+	 * A level of logging severity. This is intended to be used to define custom logging levels.
+	 */
 	@FunctionalInterface
 	public interface Level {
+		/**
+		 * The severity of this level. The numbers are compatible with {@link java.lang.System.Logger.Level}
+		 * @return the severity of this level
+		 */
 		int level();
 	}
 
@@ -78,14 +89,25 @@ public class Logger {
 	}
 
 	/**
-	 * Returns a default shared logger to use.
+	 * Returns a default shared logger to use, upon creation this logger will have one configured output to {@link System#out}.
 	 * If the output streams access shared state then this is not thread safe.
-	 **/
+	 *
+	 * @return a shared logging object
+	 */
 	public static Logger logger() {
 		return logger;
 	}
 
+	/**
+	 * Logs and prints a throwable stack-trace
+	 * @param level the log level
+	 * @param throwable the throwable to log
+	 * @param message a message to log
+	 */
 	public void log(Level level, Throwable throwable, String message) {
+		if(outputs.isEmpty() || outputs.get(0).minimumLevel() > level.level())
+			return;
+
 		var stackWalker = StackWalker.getInstance(Set.of(
 				StackWalker.Option.RETAIN_CLASS_REFERENCE,
 				StackWalker.Option.SHOW_HIDDEN_FRAMES,
@@ -93,7 +115,9 @@ public class Logger {
 
 		var frame = stackWalker
 				.walk(stream -> stream
-						.dropWhile(f -> Logger.class.isAssignableFrom(f.getDeclaringClass()))
+						.dropWhile(
+								f -> Logger.class.isAssignableFrom(f.getDeclaringClass())
+										|| System.Logger.class.isAssignableFrom(f.getDeclaringClass()))
 						.findFirst()
 						.orElse(null));
 
@@ -106,8 +130,13 @@ public class Logger {
 		log.append(timeFormatter.format(time));
 		log.append('[').append(level.toString()).append(']');
 		log.append('[').append(callingThread.getName()).append(']');
-		log.append(' ').append(message).append(' ');
-		log.append('(').append(frame).append(')');
+		log.append(' ');
+
+		if (message != null) {
+			log.append(message).append(' ');
+		}
+
+		log.append('(').append(Objects.toString(frame, "UNKNOWN-FRAME")).append(')');
 		log.append(System.lineSeparator());
 
 		if(throwable != null) {
@@ -140,38 +169,66 @@ public class Logger {
 		}
 	}
 
-	private Level defaultLevel() {
+	/**
+	 * The default logging level for this logger
+	 * @return a level
+	 */
+	protected Level defaultLevel() {
 		return Severity.INFO;
 	}
 
+	/**
+	 * Logs and prints an exception stack-trace with formatting
+	 * @param level the level
+	 * @param throwable the exception to print the trace of
+	 * @param message the format string
+	 * @param args format string arguments
+	 */
 	public void log(Level level, Throwable throwable, String message, Object... args) {
 		log(level, throwable, String.format(message, args));
 	}
 
 	/**
-	 * Logs the given message with the ERROR level for this logger.
+	 * Logs the given message with the ERROR level for this logger and prints the stack trace.
+	 * @param throwable the exception to print the stack trace of
+	 * @param message the format string
+	 * @param args format string arguments
 	 */
 	public void log(Throwable throwable, String message, Object... args) {
 		log(Severity.ERROR, throwable, message, args);
 	}
 
+	/**
+	 * Logs a formatted message
+	 * @param level the level to log at
+	 * @param message the format string to log
+	 * @param args format string arguments
+	 */
 	public void log(Level level, String message, Object... args) {
 		log(level, null, message, args);
 	}
 
+	/**
+	 * Prints an exception stack-trace
+	 * @param level the level to log at
+	 * @param throwable the exception to log
+	 */
 	public void log(Level level, Throwable throwable) {
 		log(level, throwable, (String) null);
 	}
 
 	/**
-	 * Logs the given message with the default level for this logger.
+	 * Logs the given message with the default level for this logger. The default level is defined by {@link Logger#defaultLevel()}
+	 * @param message the format string to log
+	 * @param args format string arguments
 	 */
 	public void log(String message, Object... args) {
 		log(defaultLevel(), null, message, args);
 	}
 
 	/**
-	 * Logs the given message with the ERROR level for this logger.
+	 * Logs the given message with the ERROR level for this logger and prints the stack trace
+	 * @param throwable the exception to log.
 	 */
 	public void log(Throwable throwable) {
 		log(Severity.ERROR, throwable, null);

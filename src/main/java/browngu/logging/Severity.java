@@ -2,11 +2,34 @@ package browngu.logging;
 
 import java.lang.annotation.Native;
 
+/**
+ * Pre-defined severity levels matching the levels used by {@link System.Logger.Level}
+ */
 public enum Severity implements Logger.Level {
-	@Native DEBUG(10, "Information of use to the programmer"),
-	@Native INFO(20, "Detailed information"),
-	@Native WARNING(30, "Non-fatal issues"),
-	@Native ERROR(40, "Fatal issues");
+	/**
+	 * Diagnostic information
+	 */
+	@Native TRACE(System.Logger.Level.TRACE.getSeverity(), "Diagnostic information"),
+
+	/**
+	 * Information of use to developers
+	 */
+	@Native DEBUG(System.Logger.Level.DEBUG.getSeverity(), "Information of use to developers"),
+
+	/**
+	 * Detailed information
+	 */
+	@Native INFO(System.Logger.Level.INFO.getSeverity(), "Detailed information"),
+
+	/**
+	 * Non-fatal issues
+	 */
+	@Native WARNING(System.Logger.Level.WARNING.getSeverity(), "Non-fatal issues"),
+
+	/**
+	 * Fatal issues
+	 */
+	@Native ERROR(System.Logger.Level.ERROR.getSeverity(), "Fatal issues");
 
 	private final String description;
 	private final int level;
@@ -15,7 +38,11 @@ public enum Severity implements Logger.Level {
 		this.description = description;
 		this.level = level;
 	}
-	
+
+	/**
+	 * Describes this severity
+	 * @return a string description of this severity
+	 */
 	public String description() {
 		return description;
 	}
