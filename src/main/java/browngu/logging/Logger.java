@@ -21,6 +21,7 @@ public class Logger {
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
 			"'['yyyy-MM-dd']['HH:mm:ss.ss']'"
 	).withZone(ZoneId.systemDefault());
+	private final Set<Class<?>> ignoredFrames = new HashSet<>();
 
 	/**
 	 * A level of logging severity. This is intended to be used to define custom logging levels.
@@ -99,6 +100,22 @@ public class Logger {
 	}
 
 	/**
+	 * Configures this logger to skip stack frames from any subclass of the provided class
+	 * @param clazz the class to ignore
+	 */
+	public void ignoreFramesFrom(Class<?> clazz) {
+		ignoredFrames.add(clazz);
+	}
+
+	/**
+	 * Configures this logger to stop ignoring stack frames from any subclass of the provided class
+	 * @param clazz the class to stop ignoring
+	 */
+	public void acceptFramesFrom(Class<?> clazz) {
+		ignoredFrames.remove(clazz);
+	}
+
+	/**
 	 * Logs and prints a throwable stack-trace
 	 * @param level the log level
 	 * @param throwable the throwable to log
@@ -115,9 +132,7 @@ public class Logger {
 
 		var frame = stackWalker
 				.walk(stream -> stream
-						.dropWhile(
-								f -> Logger.class.isAssignableFrom(f.getDeclaringClass())
-										|| System.Logger.class.isAssignableFrom(f.getDeclaringClass()))
+						.dropWhile(f -> ignoredFrames.stream().anyMatch(c -> c.isAssignableFrom(f.getDeclaringClass())))
 						.findFirst()
 						.orElse(null));
 
@@ -175,6 +190,15 @@ public class Logger {
 	 */
 	protected Level defaultLevel() {
 		return Severity.INFO;
+	}
+
+	/**
+	 * Queries if a message at the given level will ever be logged
+	 * @param level the level to query
+	 * @return true if the level will be logged
+	 */
+	public boolean isLoggingEnabled(Level level) {
+		return !outputs.isEmpty() && outputs.get(0).minimumLevel() <= level.level();
 	}
 
 	/**
