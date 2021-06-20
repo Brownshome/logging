@@ -13,6 +13,10 @@ class SLF4JLoggingAdaptor extends MarkerIgnoringBase {
 		delegate.ignoreFramesFrom(getClass());
 	}
 
+	private static String convertFormat(String format) {
+		return format.replace("%", "%%").replace("{}", "%s");
+	}
+
 	@Override
 	public boolean isTraceEnabled() {
 		return delegate.isLoggingEnabled(Severity.TRACE);
@@ -25,17 +29,17 @@ class SLF4JLoggingAdaptor extends MarkerIgnoringBase {
 
 	@Override
 	public void trace(String format, Object arg) {
-		delegate.log(Severity.TRACE, format, arg);
+		delegate.log(Severity.TRACE, convertFormat(format), arg);
 	}
 
 	@Override
 	public void trace(String format, Object arg1, Object arg2) {
-		delegate.log(Severity.TRACE, format, arg1, arg2);
+		delegate.log(Severity.TRACE, convertFormat(format), arg1, arg2);
 	}
 
 	@Override
 	public void trace(String format, Object... arguments) {
-		delegate.log(Severity.TRACE, format, arguments);
+		delegate.log(Severity.TRACE, convertFormat(format), arguments);
 	}
 
 	@Override
@@ -55,17 +59,17 @@ class SLF4JLoggingAdaptor extends MarkerIgnoringBase {
 
 	@Override
 	public void debug(String format, Object arg) {
-		delegate.log(Severity.DEBUG, format, arg);
+		delegate.log(Severity.DEBUG, convertFormat(format), arg);
 	}
 
 	@Override
 	public void debug(String format, Object arg1, Object arg2) {
-		delegate.log(Severity.DEBUG, format, arg1, arg2);
+		delegate.log(Severity.DEBUG, convertFormat(format), arg1, arg2);
 	}
 
 	@Override
 	public void debug(String format, Object... arguments) {
-		delegate.log(Severity.DEBUG, format, arguments);
+		delegate.log(Severity.DEBUG, convertFormat(format), arguments);
 	}
 
 	@Override
@@ -85,17 +89,17 @@ class SLF4JLoggingAdaptor extends MarkerIgnoringBase {
 
 	@Override
 	public void info(String format, Object arg) {
-		delegate.log(Severity.INFO, format, arg);
+		delegate.log(Severity.INFO, convertFormat(format), arg);
 	}
 
 	@Override
 	public void info(String format, Object arg1, Object arg2) {
-		delegate.log(Severity.INFO, format, arg1, arg2);
+		delegate.log(Severity.INFO, convertFormat(format), arg1, arg2);
 	}
 
 	@Override
 	public void info(String format, Object... arguments) {
-		delegate.log(Severity.INFO, format, arguments);
+		delegate.log(Severity.INFO, convertFormat(format), arguments);
 	}
 
 	@Override
@@ -115,17 +119,17 @@ class SLF4JLoggingAdaptor extends MarkerIgnoringBase {
 
 	@Override
 	public void warn(String format, Object arg) {
-		delegate.log(Severity.WARNING, format, arg);
+		delegate.log(Severity.WARNING, convertFormat(format), arg);
 	}
 
 	@Override
 	public void warn(String format, Object arg1, Object arg2) {
-		delegate.log(Severity.WARNING, format, arg1, arg2);
+		delegate.log(Severity.WARNING, convertFormat(format), arg1, arg2);
 	}
 
 	@Override
 	public void warn(String format, Object... arguments) {
-		delegate.log(Severity.WARNING, format, arguments);
+		delegate.log(Severity.WARNING, convertFormat(format), arguments);
 	}
 
 	@Override
@@ -145,17 +149,17 @@ class SLF4JLoggingAdaptor extends MarkerIgnoringBase {
 
 	@Override
 	public void error(String format, Object arg) {
-		delegate.log(Severity.ERROR, format, arg);
+		delegate.log(Severity.ERROR, convertFormat(format), arg);
 	}
 
 	@Override
 	public void error(String format, Object arg1, Object arg2) {
-		delegate.log(Severity.ERROR, format, arg1, arg2);
+		delegate.log(Severity.ERROR, convertFormat(format), arg1, arg2);
 	}
 
 	@Override
 	public void error(String format, Object... arguments) {
-		delegate.log(Severity.ERROR, format, arguments);
+		delegate.log(Severity.ERROR, convertFormat(format), arguments);
 	}
 
 	@Override

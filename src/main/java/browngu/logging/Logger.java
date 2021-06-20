@@ -15,6 +15,8 @@ public class Logger {
 
 	static {
 		logger().addLoggingOutput(System.out, Severity.INFO);
+		logger().ignoreFramesFrom(Logger.class);
+		logger().ignoreFramesFrom(System.Logger.class);
 	}
 
 	private final List<Output> outputs = new ArrayList<>();
