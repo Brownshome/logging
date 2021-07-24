@@ -21,7 +21,7 @@ public class Logger {
 
 	private final List<Output> outputs = new ArrayList<>();
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern(
-			"'['yyyy-MM-dd']['HH:mm:ss.ss']'"
+			"'['yyyy-MM-dd']['HH:mm:ss.SSS']'"
 	).withZone(ZoneId.systemDefault());
 	private final Set<Class<?>> ignoredFrames = new HashSet<>();
 
@@ -145,7 +145,7 @@ public class Logger {
 		StringBuilder log = new StringBuilder();
 
 		log.append(timeFormatter.format(time));
-		log.append('[').append(level.toString()).append(']');
+		log.append('[').append(level).append(']');
 		log.append('[').append(callingThread.getName()).append(']');
 		log.append(' ');
 

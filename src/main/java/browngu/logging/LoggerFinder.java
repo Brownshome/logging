@@ -1,5 +1,6 @@
 package browngu.logging;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 /**
@@ -21,7 +22,7 @@ public class LoggerFinder extends System.LoggerFinder {
 
 		@Override
 		public void log(System.Logger.Level level, ResourceBundle bundle, String msg, Throwable thrown) {
-			Logger.logger().log(translateLevel(level), thrown, msg);
+			Logger.logger().log(translateLevel(level), thrown, escapeMessage(msg));
 		}
 
 		@Override
@@ -35,7 +36,10 @@ public class LoggerFinder extends System.LoggerFinder {
 
 		@Override
 		public void log(System.Logger.Level level, ResourceBundle bundle, String format, Object... params) {
-			Logger.logger().log(translateLevel(level), format, params);
+			// Expand the message here, as our logger uses String.format
+			var message = params == null || params.length == 0 ? format : MessageFormat.format(format, params);
+
+			Logger.logger().log(translateLevel(level), escapeMessage(message));
 		}
 
 		Logger.Level translateLevel(System.Logger.Level level) {
@@ -54,6 +58,10 @@ public class LoggerFinder extends System.LoggerFinder {
 					return l.toString();
 				}
 			};
+		}
+
+		private String escapeMessage(String message) {
+			return message.replace("%", "%%");
 		}
 	};
 
